@@ -26,7 +26,7 @@ func TestCleanInput(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		actual := cleanInput(c.input)
+		actual := CleanInput(c.input)
 		if !slices.Equal(actual, c.expected) {
 			t.Errorf("cleanInput(%v) = %v; expects %v", c.input, actual, c.expected)
 		}
