@@ -3,6 +3,7 @@ package pokemon
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"github.com/landanqrew/pokemon-go/internal/web"
 )
@@ -63,17 +64,34 @@ func GetSubsetSerialized[T PokeApiResponse](dataChan chan T, errChan chan error,
 
 func GetAllResponses[T PokeApiResponse](baseUrl string, limit int) ([]T, error) {
 	responses := []T{}
-	res, statusCode, err := web.FetchAndSerializeStruct[T](baseUrl)
+	res, statusCode, err := web.FetchAndSerializeStruct[T](baseUrl + fmt.Sprintf("?limit=%d", limit))
 	if err != nil {
 		return nil, fmt.Errorf("error fetching object response with error: %v and status code: %d", err, statusCode)
 	}
 	responses = append(responses, res)
+
 	dataChan := make(chan T)
-	defer close(dataChan)
 	errChan := make(chan error)
-	defer close(errChan)
-	go GetSubsetSerialized[T](dataChan, errChan, baseUrl, limit, 0, res.GetCount())
-	// handle channel events
+	var wg sync.WaitGroup
+
+	// Launch goroutines for remaining data
+	for i := limit; i < res.GetCount(); i += limit {
+		wg.Add(1)
+		go func(offset int) {
+			defer wg.Done()
+			GetSubsetSerialized(dataChan, errChan, baseUrl, limit, offset, res.GetCount())
+		}(i) // Pass i as a parameter to avoid closure issues
+	}
+
+	
+	go func() {
+
+		wg.Wait()      
+		close(dataChan) 
+		close(errChan)
+	}()
+
+	// Handle channel events
 	for {
 		select {
 		case response, ok := <-dataChan:
@@ -86,10 +104,10 @@ func GetAllResponses[T PokeApiResponse](baseUrl string, limit int) ([]T, error) 
 			if !ok {
 				errChan = nil
 			} else {
-				fmt.Printf("error fetching object subset with error: %v and status code: %d", err, statusCode)
+				fmt.Printf("error fetching object subset with error: %v\n", err)
 			}
 		}
-		// break if both channels are exhausted
+		// Break if both channels are exhausted
 		if dataChan == nil && errChan == nil {
 			break
 		}

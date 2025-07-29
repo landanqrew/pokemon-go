@@ -7,6 +7,20 @@ import (
 	"net/http"
 )
 
+func GetResponseBytes(url string, limit int, offset int) ([]byte, error) {
+	constructedUrl := fmt.Sprintf("%s?limit=%d&offset=%d", url, limit, offset)
+	res, err := http.Get(constructedUrl)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch data from url (%s): %v", constructedUrl, err.Error())
+	}
+
+	byteSlice, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("could not read bytes from response body, %w", err)
+	}
+
+	return byteSlice, nil
+}
 
 
 func FetchAndSerializeArray[T any](url string) ([]T, error) {
@@ -63,7 +77,7 @@ func GetPrint(url string) error {
 
 	byteSlice, err := io.ReadAll(res.Body)
 	if err != nil {
-		fmt.Errorf("could not read bytes from response body, %w", err)
+		return fmt.Errorf("could not read bytes from response body, %w", err)
 	}
 
 	fmt.Println("response:\n",string(byteSlice))

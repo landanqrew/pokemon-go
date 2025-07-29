@@ -1,5 +1,11 @@
 package pokemon
 
+import (
+	"encoding/json"
+
+	"github.com/landanqrew/pokemon-go/internal/storage"
+)
+
 
 type LocationAreaResponse struct {
 	Count    int    `json:"count"`
@@ -36,7 +42,7 @@ func (l LocationArea) GetURL() string {
 
 func GetLocationAreas() ([]LocationArea, error) {
 	url := "https://pokeapi.co/api/v2/location-area/"
-	responses, err := GetAllResponses[LocationAreaResponse](url, 100)
+	responses, err := GetAllResponses[LocationAreaResponse](url, 500)
 	if err != nil {
 		return nil, err
 	}
@@ -48,6 +54,60 @@ func GetLocationAreas() ([]LocationArea, error) {
 			locationAreas = append(locationAreas, result.(LocationArea))
 		}
 	}
+	return locationAreas, nil
+}
+
+func ReadLocationsFromCache() ([]LocationArea, error) {
+	if !storage.StorageFileExists("locationAreas.json") {
+		locationAreas, err := GetAndStoreLocationAreas()
+		if err != nil {
+			return nil, err
+		}
+		return locationAreas, nil
+	}
+
+	jsonBytes, err := storage.ReadBytes("locationAreas.json")
+	if err != nil {
+		return nil, err
+	}
+
+	locationAreas := []LocationArea{}
+	err = json.Unmarshal(jsonBytes, &locationAreas)
+	if err != nil {
+		return nil, err
+	}
+	return locationAreas, nil
+}
+
+func GetLocationNames() ([]string, error) {
+	locationAreas, err := ReadLocationsFromCache()
+	if err != nil {
+		return nil, err
+	}
+
+	locationNames := []string{}
+	for _, locationArea := range locationAreas {
+		locationNames = append(locationNames, locationArea.Name)
+	}
+	return locationNames, nil
+}
+
+func GetAndStoreLocationAreas() ([]LocationArea, error) {
+	locationAreas, err := GetLocationAreas()
+	if err != nil {
+		return nil, err
+	}
+
+	jsonBytes, err := json.MarshalIndent(locationAreas, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	err = storage.WriteBytes(jsonBytes, "locationAreas.json")
+	if err != nil {
+		return nil, err
+	}
+
 	return locationAreas, nil
 }
 

@@ -8,23 +8,21 @@ import (
 )
 
 
-func CommandMap() error {
-	// fmt.Println("Map")
+func CommandMapBack() error {
+	// fmt.Println("Mapb")
 	locationNames, err := pokemon.GetLocationNames()
 	if err != nil {
 		return fmt.Errorf("error getting location names: %v", err)
 	}
 
 	appState := state.AppState
-	// fmt.Printf("appState.Page: %d\n", appState.LocationNamePage)
-	if appState.LocationNamePage == 0 || appState.LocationNamePage*20 > len(locationNames) {
+	if appState.GetLocationNamePage() <= 1 {
+		fmt.Println("cannot decrement page. Input 'map' to go to the next page")
 		appState.ResetLocationPage()
 	} else {
-		appState.IncrementLocationPage()
-		// fmt.Printf("appState.Page: %d\n", appState.LocationNamePage)
+		appState.DecrementLocationPage()
 	}
 	page := appState.GetLocationNamePage()
-	// fmt.Printf("page: %d\n", page)
 
 	startIndex := (page - 1) * 20
 	endIndex := startIndex + 20

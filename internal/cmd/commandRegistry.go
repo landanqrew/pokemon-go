@@ -25,5 +25,10 @@ func BuildCommandMap() {
 			Description: "Displays a map of the Pokedex",
 			Callback:    CommandMap,
 		},
+		"mapb": {
+			Name:        "mapb",
+			Description: "Displays the previous page of the map",
+			Callback:    CommandMapBack,
+		},
 	}
 }
