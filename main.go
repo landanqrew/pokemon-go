@@ -11,6 +11,7 @@ import (
 	"github.com/landanqrew/pokemon-go/internal/cmd"
 	"github.com/landanqrew/pokemon-go/internal/config"
 	"github.com/landanqrew/pokemon-go/internal/pokecache"
+	"github.com/landanqrew/pokemon-go/internal/state"
 	"github.com/landanqrew/pokemon-go/internal/utils"
 )
 
@@ -21,6 +22,8 @@ func main() {
 	cmd.BuildCommandMap() // initialize command map
 	config := config.GetConfig()
 	config.Client = api.NewClient(cachePtr, "https://pokeapi.co/api/v2/")
+	appState := state.AppState
+	appState.Init()
 
 
 
@@ -40,15 +43,24 @@ func main() {
 						fmt.Printf("You need to provide an argument after %s for the %s command\n", command, command)
 					} else {
 						config.Args = cleaned[1:]
-						cmd.CommandListMap[command].Callback(config)
+						err := cmd.CommandListMap[command].Callback(config)
+						if err != nil {
+							fmt.Println(err)
+						}
 					}
 				} else {
-					cmd.CommandListMap[command].Callback(config)
+					err := cmd.CommandListMap[command].Callback(config)
+					if err != nil {
+						fmt.Println(err)
+					}
 				}
 				
 			} else {
 				fmt.Printf("Your command was: %v. This is not a valid command\n", command)
-				cmd.CommandHelp(config)
+				err := cmd.CommandHelp(config)
+				if err != nil {
+					fmt.Println(err)
+				}
 			}
 		}
 	}

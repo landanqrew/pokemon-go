@@ -187,3 +187,20 @@ type ExploredLocationArea struct {
 		} `json:"version_details"`
 	} `json:"pokemon_encounters"`
 }
+
+
+func ParsePokemonNamesFromResponse(res []byte) ([]string, error) {
+	pokemonNames := []string{}
+
+	locationDetails := ExploredLocationArea{}
+	err := json.Unmarshal(res, &locationDetails)
+	if err != nil {
+		return pokemonNames, fmt.Errorf("cannot unmarshal to ExpoloredLocationArea struct. %v", err)
+	}
+
+	for _, encounter := range locationDetails.PokemonEncounters {
+		pokemonNames = append(pokemonNames, encounter.Pokemon.Name)
+	}
+
+	return pokemonNames, nil
+}

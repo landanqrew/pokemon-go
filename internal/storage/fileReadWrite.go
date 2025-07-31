@@ -10,7 +10,7 @@ import (
 
 
 func WriteBytes(byteData []byte, fileName string) error {
-	config := config.Config{}
+	config := config.GetConfig()
 	rootProgramDir := config.GetRootDir()
 	storageDir := rootProgramDir + "/storage"
 
@@ -37,7 +37,7 @@ func WriteBytes(byteData []byte, fileName string) error {
 
 
 func ReadBytes(fileName string) ([]byte, error) {
-	config := config.Config{}
+	config := config.GetConfig()
 	rootProgramDir := config.GetRootDir()
 	storageDir := rootProgramDir + "/storage"
 
@@ -84,7 +84,7 @@ func DeserializeJsonObject[T any](byteData []byte) (T, error) {
 }
 
 func StorageFileExists(fileName string) bool {
-	config := config.Config{}
+	config := config.GetConfig()
 	rootProgramDir := config.GetRootDir()
 	storageDir := rootProgramDir + "/storage"
 

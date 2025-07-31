@@ -10,14 +10,14 @@ import (
 
 func CommandExplore(cfg *config.Config) error {
 	location := cfg.Args[0]
-	locationArea := pokemon.LocationArea{
-		Name: location,
-		URL: fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%s/", location),
+	response, err := cfg.Client.Cache.Get(cfg.Client.BaseURL + "location-area/" + location)
+	if err != nil {
+		return fmt.Errorf("error getting location area details: %v", err)
 	}
 
-	pokemonNames, err := locationArea.GetPokemonNames()
+	pokemonNames, err := pokemon.ParsePokemonNamesFromResponse(response)
 	if err != nil {
-		return fmt.Errorf("error getting pokemon names: %v", err)
+		return fmt.Errorf("error parsing pokemon names: %v", err)
 	}
 
 	fmt.Printf("Exploring %s...\n", location)

@@ -43,5 +43,29 @@ func BuildCommandMap() {
 			Args:        []string{"location"},
 			Callback:    CommandExplore,
 		},
+		"catch": {
+			Name:        "catch",
+			Description: "Percentage chance of catching a pokemon and adding it to the pokedex",
+			Args:        []string{"pokemonName"},
+			Callback:    CommandCatch,
+		},
+		"pokedex": {
+			Name:        "pokedex",
+			Description: "Displays a list of pokemon in the pokedex",
+			Args:        []string{},
+			Callback:    CommandList,
+		},
+		"list": {
+			Name:        "list",
+			Description: "Displays a list of pokemon in the pokedex",
+			Args:        []string{},
+			Callback:    CommandList,
+		},
+		"inspect": {
+			Name:        "inspect",
+			Description: "Displays a detailed description of a pokemon",
+			Args:        []string{"pokemonName"},
+			Callback:    CommandInspect,
+		},
 	}
 }

@@ -10,8 +10,8 @@ import (
 
 type Config struct {
 	DefaultStorageLocation string
-	Client *api.Client
-	Args []string
+	Client                 *api.Client
+	Args                   []string
 }
 
 func (c *Config) GetRootDir() string {
@@ -28,7 +28,7 @@ func (c *Config) Init() {
 	}
 	c.DefaultStorageLocation = homeDir + "/.pokemon-go"
 
-	_, err = os.ReadDir(c.DefaultStorageLocation) 
+	_, err = os.ReadDir(c.DefaultStorageLocation)
 	if err != nil {
 		if os.IsNotExist(err) {
 			fmt.Println("Root Program Directory does not exist. Creating directory...")
