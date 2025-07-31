@@ -22,6 +22,20 @@ func GetResponseBytes(url string, limit int, offset int) ([]byte, error) {
 	return byteSlice, nil
 }
 
+func GetResponseBytesBaseUrl(url string) ([]byte, error) {
+	res, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch data from url (%s): %v", url, err.Error())
+	}
+
+	byteSlice, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("could not read bytes from response body, %w", err)
+	}
+
+	return byteSlice, nil
+}
+
 
 func FetchAndSerializeArray[T any](url string) ([]T, error) {
 	output := []T{}

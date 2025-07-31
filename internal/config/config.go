@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"github.com/landanqrew/pokemon-go/internal/api"
 )
 
 type Config struct {
 	DefaultStorageLocation string
+	Client *api.Client
+	Args []string
 }
 
 func (c *Config) GetRootDir() string {
@@ -37,4 +41,10 @@ func (c *Config) Init() {
 		}
 	}
 
+}
+
+func GetConfig() *Config {
+	cfg := Config{}
+	cfg.Init()
+	return &cfg
 }

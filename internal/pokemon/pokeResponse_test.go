@@ -32,7 +32,6 @@ func TestGetSubsetSerialized(t *testing.T) {
 
 			go GetSubsetSerialized(dataChan, errChan, test.url, 100, 0, 100)
 
-			// Use a select with a timeout to wait for a result
 			select {
 			case result := <-dataChan:
 				jsonString, err := json.MarshalIndent(result, "", "  ")
@@ -50,7 +49,7 @@ func TestGetSubsetSerialized(t *testing.T) {
 				if !test.expectError {
 					t.Errorf("expected no error, but got: %v", err)
 				}
-			case <-time.After(5 * time.Second): // Timeout after 5 seconds
+			case <-time.After(5 * time.Second):
 				t.Fatal("test timed out waiting for a response")
 			}
 

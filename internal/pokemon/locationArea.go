@@ -2,8 +2,10 @@ package pokemon
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/landanqrew/pokemon-go/internal/storage"
+	"github.com/landanqrew/pokemon-go/internal/web"
 )
 
 
@@ -37,6 +39,27 @@ func (l LocationArea) GetName() string {
 
 func (l LocationArea) GetURL() string {
 	return l.URL
+}
+
+func (l LocationArea) GetPokemonNames() ([]string, error) {
+	pokemonNames := []string{}
+	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%s/", l.Name)
+	res, err := web.GetResponseBytesBaseUrl(url)
+	if err  != nil {
+		return pokemonNames, fmt.Errorf("cannot get reponse details. %v", err) 
+	}
+
+	locationDetails := ExploredLocationArea{}
+	err = json.Unmarshal(res, &locationDetails)
+	if err != nil {
+		return pokemonNames, fmt.Errorf("cannot unmarshal to ExpoloredLocationArea struct. %v", err)
+	}
+
+	for _, encounter := range locationDetails.PokemonEncounters {
+		pokemonNames = append(pokemonNames, encounter.Pokemon.Name)
+	}
+
+	return pokemonNames, nil
 }
 
 
@@ -112,63 +135,55 @@ func GetAndStoreLocationAreas() ([]LocationArea, error) {
 }
 
 
-/*
-func GetLocationAreas() ([]LocationArea, error) {
-	url := "https://pokeapi.co/api/v2/location-area/"
-	locAreaResponse, statusCode, err := web.FetchAndSerializeStruct[LocationAreaResponse](url)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching location area response with error: %v and status code: %d", err, statusCode)
-	}
-	locChan := make(chan LocationArea)
-	errChan := make(chan error)
-	go GetLocationAreaSubsets(locChan, errChan, url, 100, 0, locAreaResponse.Count)
-
-	locationAreas := []LocationArea{}
-	for {
-		select {
-		case locationArea, ok := <-locChan:
-			if !ok {
-				// locChan is closed and exhausted
-				locChan = nil // Set to nil to make this case non-selectable
-			} else {
-				locationAreas = append(locationAreas, locationArea)
-			}
-		case err, ok := <-errChan:
-			if !ok {
-				// errChan is closed and exhausted
-				errChan = nil // Set to nil to make this case non-selectable
-			} else {
-				fmt.Println(err.Error()) // Print error for visibility
-			}
-		}
-
-		// Break condition: exit loop when both channels are nil (closed and exhausted)
-		if locChan == nil && errChan == nil {
-			break
-		}
-	}
-	
-
-	return locationAreas, nil
+type ExploredLocationArea struct {
+	EncounterMethodRates []struct {
+		EncounterMethod struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"encounter_method"`
+		VersionDetails []struct {
+			Rate    int `json:"rate"`
+			Version struct {
+				Name string `json:"name"`
+				URL  string `json:"url"`
+			} `json:"version"`
+		} `json:"version_details"`
+	} `json:"encounter_method_rates"`
+	GameIndex int `json:"game_index"`
+	ID        int `json:"id"`
+	Location  struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"location"`
+	Name  string `json:"name"`
+	Names []struct {
+		Language struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"language"`
+		Name string `json:"name"`
+	} `json:"names"`
+	PokemonEncounters []struct {
+		Pokemon struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"pokemon"`
+		VersionDetails []struct {
+			EncounterDetails []struct {
+				Chance          int   `json:"chance"`
+				ConditionValues []any `json:"condition_values"`
+				MaxLevel        int   `json:"max_level"`
+				Method          struct {
+					Name string `json:"name"`
+					URL  string `json:"url"`
+				} `json:"method"`
+				MinLevel int `json:"min_level"`
+			} `json:"encounter_details"`
+			MaxChance int `json:"max_chance"`
+			Version   struct {
+				Name string `json:"name"`
+				URL  string `json:"url"`
+			} `json:"version"`
+		} `json:"version_details"`
+	} `json:"pokemon_encounters"`
 }
-*/
-
-/*
-func GetLocationAreaSubsets(locChan chan LocationArea, errChan chan error, baseUrl string, limit int, offset int, max int) {
-	defer close(locChan)
-	for i := offset; i < max; i+= limit {
-		if i + limit > max {
-			limit = max - i
-		}
-		url := fmt.Sprintf("%s?limit=%d&offset=%d", baseUrl, limit, i)
-		locationAreaResponse, statusCode, err := web.FetchAndSerializeStruct[LocationAreaResponse](url)
-		if err != nil {
-			errChan <- fmt.Errorf("error fetching location area subset with error: %v and status code: %d", err, statusCode)
-			//channel <- LocationArea{} // maybe retry call if the error is of a certain type
-		}
-		for _, locationArea := range locationAreaResponse.Results {
-			locChan <- locationArea
-		}
-	}
-	
-}*/

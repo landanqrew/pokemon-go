@@ -3,12 +3,13 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/landanqrew/pokemon-go/internal/config"
 	"github.com/landanqrew/pokemon-go/internal/pokemon"
 	"github.com/landanqrew/pokemon-go/internal/state"
 )
 
 
-func CommandMap() error {
+func CommandMap(cfg *config.Config) error {
 	// fmt.Println("Map")
 	locationNames, err := pokemon.GetLocationNames()
 	if err != nil {
